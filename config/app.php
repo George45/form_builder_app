@@ -168,6 +168,7 @@ return [
 		// App\Providers\BroadcastServiceProvider::class, // todo: File is unused, consider removing
 		App\Providers\EventServiceProvider::class,
 		App\Providers\RouteServiceProvider::class,
+		Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class // rap2hpoutre/laravel-log-viewer
 	])->toArray(),
 
 	/*

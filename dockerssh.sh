@@ -1,0 +1,1 @@
+docker exec -it form_builder_app-laravel.test-1 bash

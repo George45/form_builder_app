@@ -21,7 +21,7 @@ return new class extends Migration
 			$table->boolean('required');
 			$table->timestamps();
 
-			$table->foreign('form_id')->references('id')->on('forms');
+			$table->foreign('form_id')->references('id')->on('forms')->onDelete('cascade');
 			$table->foreign('field_type')->references('type')->on('field_types');
 		});
 	}

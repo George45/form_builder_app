@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\FieldsController;
 use App\Http\Controllers\FormsController;
 // use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -39,6 +40,10 @@ class RouteServiceProvider extends ServiceProvider
 
 			Route::middleware('web')
 				->resource('forms', FormsController::class);
+
+			Route::middleware('web')
+				->resource('fields', FieldsController::class)
+				->only(['store', 'update', 'destroy']);
 		});
 	}
 }

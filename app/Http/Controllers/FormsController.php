@@ -2,16 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\FieldRepository;
+use App\Repositories\FieldTypeRepository;
+use App\Repositories\FormRepository;
 use Illuminate\Http\Request;
 
 class FormsController
 {
+	public FieldRepository $field;
+	public FormRepository $form;
+	public FieldTypeRepository $types;
+
+	public function __construct()
+	{
+		$this->field = new FieldRepository();
+		$this->form = new FormRepository();
+		$this->types = new FieldTypeRepository();
+	}
+
 	/**
 	 * Return the view for listing all created forms
 	 */
 	public function index()
 	{
-		return view('forms.index');
+		return view('forms.index', [
+			'forms' => $this->form->getAll()
+		]);
 	}
 
 	/**
@@ -29,30 +45,37 @@ class FormsController
 	 */
 	public function store(Request $request)
 	{
-		dd('store');
+		$data = $request->only(['name', 'description']);
+
+		$form = $this->form->createForm($data);
+
+		return redirect()->action([$this::class, 'show'], ['form' => $form->id]);
 	}
 
 	/**
 	 * Return the view for displaying info about a form
 	 * 
-	 * @param integer $id The ID of the form to view
+	 * @param int $id The ID of the form to view
 	 */
 	public function show(int $id)
 	{
 		return view('forms.show', [
-			'id' => $id
+			'form' => $this->form->getById($id)[0],
+			'fields' => $this->field->getById($id)
 		]);
 	}
 
 	/**
 	 * Return the view for editing a form
 	 * 
-	 * @param integer $id The ID of the form to edit
+	 * @param int $id The ID of the form to edit
 	 */
 	public function edit(int $id)
 	{
 		return view('forms.edit', [
-			'id' => $id
+			'form' => $this->form->getById($id)[0],
+			'fields' => $this->field->getById($id),
+			'types' => $this->types->getAll()
 		]);
 	}
 
@@ -60,21 +83,27 @@ class FormsController
 	 * Update a form
 	 * 
 	 * @param Request $request
-	 * @param integer $id The ID of the form to update
+	 * @param int $id The ID of the form to update
 	 */
 	public function update(Request $request, int $id)
 	{
-		dd('update');
+		$data = $request->only(['name', 'description']);
+
+		$success = $this->form->updateForm($id, $data);
+
+		return redirect()->action([$this::class, 'show'], ['form' => $id]);
 	}
 
 	/**
 	 * Delete a form
 	 * 
 	 * @param Request $request
-	 * @param integer $id The ID of the form to delete
+	 * @param int $id The ID of the form to delete
 	 */
 	public function destroy(int $id)
 	{
-		dd('destroy');
+		$success = $this->form->deleteForm($id);
+
+		return redirect()->action([$this::class, 'index']);
 	}
 }

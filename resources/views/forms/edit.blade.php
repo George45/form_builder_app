@@ -17,7 +17,7 @@
 	<br/>
 	<br/>
 
-	Delete
+	Delete Form
 	<form action="/form/{{ $form['id'] }}" method="POST">
 		@csrf
 		@method('DELETE')
@@ -101,18 +101,21 @@
 				id="field_{{ $field['id'] }}_required"
 				@if($field['required'] === 1) checked="checked" @endif>
 
-			{{-- <form action="/field/{{ $field['id'] }}" method="POST">
-				@csrf
-				@method('DELETE')
-				<input type="hidden" name="form_id" value="{{ $form['id'] }}">
-				<button type="submit">Delete</button>
-			</form> --}}
+			<button type="submit" form="fieldDelete{{ $field['id'] }}">Delete</button>
 
 			<br/>
 		@endforeach
 
 		<button type="submit">Submit</button>
 	</form>
+
+	@foreach($fields as $field)
+		<form action="/field/{{ $field['id'] }}" method="POST" id="fieldDelete{{ $field['id'] }}">
+			@csrf
+			@method('DELETE')
+			<input type="hidden" name="form_id" id="form_id" value="{{ $form['id'] }}">
+		</form>
+	@endforeach
 
 	<br/>
 	<br/>

@@ -22,5 +22,5 @@
 		@endforeach
 	</table>
 	
-	<a href="/forms/{{ $form['id'] }}/edit">Edit Form</a>
+	<a href="/form/{{ $form['id'] }}/edit">Edit Form</a>
 @endsection

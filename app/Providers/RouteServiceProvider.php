@@ -39,11 +39,18 @@ class RouteServiceProvider extends ServiceProvider
 				->group(base_path('routes/web.php'));
 
 			Route::middleware('web')
-				->resource('forms', FormsController::class);
+				->resource('form', FormsController::class);
 
 			Route::middleware('web')
-				->resource('fields', FieldsController::class)
-				->only(['store', 'update', 'destroy']);
+				->resource('field', FieldsController::class)
+				->only([
+					'store',
+					// 'update', // todo: currently unused, consider removing
+					'destroy'
+				]);
+
+			Route::middleware('web')
+				->patch('/fields/update', [FieldsController::class, 'updateMultiple']);
 		});
 	}
 }

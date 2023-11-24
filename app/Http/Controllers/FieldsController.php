@@ -28,7 +28,7 @@ class FieldsController
 			'description',
 			'config'
 		]);
-		$data['required'] = $request->get('required', '') === 'on';
+		$data['required'] = $request->boolean('required');
 
 		$field = $this->field->createField($data);
 
@@ -38,20 +38,38 @@ class FieldsController
 	/**
 	 * Update a field
 	 * 
+	 * @todo: currently unused, consider removing
 	 * @param Request $request
 	 * @param int $id The ID of the form to update
 	 */
-	public function update(Request $request, int $id)
-	{
-		$data = $request->only([
-			'field_type',
-			'name',
-			'description',
-			'config'
-		]);
-		$data['required'] = $request->get('required', '') === 'on';
+	// public function update(Request $request, int $id)
+	// {
+	// 	$data = $request->only([
+	// 		'field_type',
+	// 		'name',
+	// 		'description',
+	// 		'config'
+	// 	]);
+	// 	$data['required'] = $request->boolean('required');
 
-		$success = $this->field->updateField($id, $data);
+	// 	$success = $this->field->updateField($id, $data);
+
+	// 	return redirect()->action([FormsController::class, 'edit'], ['form' => $request->get('form_id')]);
+	// }
+
+	/**
+	 * Update multiple fields
+	 * 
+	 * @param Request $request
+	 */
+	public function updateMultiple(Request $request)
+	{
+		$data = $request->all();
+		foreach($data['field'] as $key => $value) {
+			$data['field'][$key]['required'] = array_key_exists('required', $data['field'][$key]);
+		}
+
+		$success = $this->field->updateFields($data['field']);
 
 		return redirect()->action([FormsController::class, 'edit'], ['form' => $request->get('form_id')]);
 	}

@@ -1,5 +1,5 @@
 @extends('master')
 
 @section('body')
-	<a href="/forms">Forms</a>
+	<a href="/form">Forms</a>
 @endsection

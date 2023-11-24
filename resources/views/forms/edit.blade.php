@@ -2,7 +2,7 @@
 
 @section('body')
 	Edit
-	<form action="/forms/{{ $form['id'] }}" method="POST">
+	<form action="/form/{{ $form['id'] }}" method="POST">
 		@csrf
 		@method('PATCH')
 		<label for="form_name">Name</label>
@@ -15,18 +15,20 @@
 	</form>
 
 	<br/>
+	<br/>
 
 	Delete
-	<form action="/forms/{{ $form['id'] }}" method="POST">
+	<form action="/form/{{ $form['id'] }}" method="POST">
 		@csrf
 		@method('DELETE')
 		<button type="submit">Delete</button>
 	</form>
 
 	<br/>
+	<br/>
 
 	New Field
-	<form action="/fields" method="POST">
+	<form action="/field" method="POST">
 		@csrf
 		<label for="form_id">Form ID</label>
 		<input type="text" name="form_id" id="form_id" value="{{ $form['id'] }}">
@@ -54,44 +56,65 @@
 	</form>
 
 	<br/>
-
+	<br/>
+	
 	Edit Existing Fields
-	@foreach($fields as $field)
-		<form action="/fields/{{ $field['id'] }}" method="POST">
-			@csrf
-			@method('PATCH')
-			<label for="field_{{ $field['id'] }}_form_id">Form ID</label>
-			<input type="text" name="form_id" id="field_{{ $field['id'] }}_form_id" value="{{ $form['id'] }}">
+	<form action="/fields/update" method="POST">
+		@csrf
+		@method('PATCH')
+		<label for="field_form_id">Form ID</label>
+		<input type="text" name="form_id" id="field_form_id" value="{{ $form['id'] }}">
 
-			<label for="field_{{ $field['id'] }}_field_type">Form ID</label>
-			<select name="field_type" id="field_{{ $field['id'] }}_field_type">
+		<br/>
+
+		@foreach($fields as $field)
+			<label for="field_{{ $field['id'] }}_type">Field Type</label>
+			<select name="field[{{ $field['id'] }}][field_type]" id="field_{{ $field['id'] }}_type">
 				@foreach($types as $type)
-					<option value="{{ $type['type'] }}" @if($type['type'] == $field['field_type']) selected="selected" @endif>{{ $type['name'] }}</option>
+					<option value="{{ $type['type'] }}"
+						@if($type['type'] == $field['field_type']) selected="selected" @endif
+					>{{ $type['name'] }}</option>
 				@endforeach
 			</select>
 
 			<label for="field_{{ $field['id'] }}_name">Name</label>
-			<input type="text" name="name" id="field_{{ $field['id'] }}_name" value="{{ $field['name'] }}">
+			<input type="text"
+				name="field[{{ $field['id'] }}][name]"
+				id="field_{{ $field['id'] }}_name"
+				value="{{ $field['name'] }}">
 
 			<label for="field_{{ $field['id'] }}_description">Description</label>
-			<input type="text" name="description" id="field_{{ $field['id'] }}_description" value="{{ $field['description'] }}">
+			<input type="text"
+				name="field[{{ $field['id'] }}][description]"
+				id="field_{{ $field['id'] }}_description"
+				value="{{ $field['description'] }}">
 
 			<label for="field_{{ $field['id'] }}_config">Config</label>
-			<input type="text" name="config" id="field_{{ $field['id'] }}_config" value="{{ $field['config'] }}">
+			<input type="text"
+				name="field[{{ $field['id'] }}][config]"
+				id="field_{{ $field['id'] }}_config"
+				value="{{ $field['config'] }}">
 
 			<label for="field_{{ $field['id'] }}_required">Required</label>
-			<input type="checkbox" name="required" id="field_{{ $field['id'] }}_required" @if($field['required'] === 1) checked="checked" @endif>
+			<input type="checkbox"
+				name="field[{{ $field['id'] }}][required]"
+				id="field_{{ $field['id'] }}_required"
+				@if($field['required'] === 1) checked="checked" @endif>
 
-			<button type="submit">Submit</button>
-		</form>
+			{{-- <form action="/field/{{ $field['id'] }}" method="POST">
+				@csrf
+				@method('DELETE')
+				<input type="hidden" name="form_id" value="{{ $form['id'] }}">
+				<button type="submit">Delete</button>
+			</form> --}}
 
-		<form action="/fields/{{ $field['id'] }}" method="POST">
-			@csrf
-			@method('DELETE')
-			<input type="hidden" name="form_id" value="{{ $form['id'] }}">
-			<button type="submit">Delete</button>
-		</form>
+			<br/>
+		@endforeach
 
-		<br/>
-	@endforeach
+		<button type="submit">Submit</button>
+	</form>
+
+	<br/>
+	<br/>
+
 @endsection

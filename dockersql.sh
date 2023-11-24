@@ -1,0 +1,1 @@
+docker exec -it form_builder_app-mysql-1 mysql -u root -p

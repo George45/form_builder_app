@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @todo: File is unused, consider removing
+ */
 class AppServiceProvider extends ServiceProvider
 {
 	/**

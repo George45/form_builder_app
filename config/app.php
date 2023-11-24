@@ -163,7 +163,7 @@ return [
 		/*
 		 * Application Service Providers...
 		 */
-		App\Providers\AppServiceProvider::class,
+		// App\Providers\AppServiceProvider::class, // todo: File is unused, consider removing
 		App\Providers\AuthServiceProvider::class,
 		// App\Providers\BroadcastServiceProvider::class, // todo: File is unused, consider removing
 		App\Providers\EventServiceProvider::class,

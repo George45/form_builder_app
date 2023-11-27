@@ -10,10 +10,10 @@
 			<tr>
 				<td>{{ $form['name'] }}</td>
 				<td>{{ $form['description'] }}</td>
-				<td><a href="/form/{{ $form['id'] }}">View</a></td>
+				<td><a href="/forms/{{ $form['id'] }}">View</a></td>
 			</tr>
 		@endforeach
 	</table>
 
-	<a href="/form/create">Create Form</a>
+	<a href="/forms/create">Create Form</a>
 @endsection

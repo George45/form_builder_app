@@ -2,7 +2,7 @@
 
 @section('body')
 	Edit
-	<form action="/form/{{ $form['id'] }}" method="POST">
+	<form action="/forms/{{ $form['id'] }}" method="POST">
 		@csrf
 		@method('PATCH')
 		<label for="form_name">Name</label>
@@ -18,7 +18,7 @@
 	<br/>
 
 	Delete Form
-	<form action="/form/{{ $form['id'] }}" method="POST">
+	<form action="/forms/{{ $form['id'] }}" method="POST">
 		@csrf
 		@method('DELETE')
 		<button type="submit">Delete</button>

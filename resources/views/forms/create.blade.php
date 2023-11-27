@@ -2,7 +2,7 @@
 
 @section('body')
 	Create
-	<form action="/form" method="POST">
+	<form action="/forms" method="POST">
 		@csrf
 		<label for="name">Name</label>
 		<input type="text" name="name" id="name">

@@ -168,7 +168,13 @@ return [
 		// App\Providers\BroadcastServiceProvider::class, // todo: File is unused, consider removing
 		App\Providers\EventServiceProvider::class,
 		App\Providers\RouteServiceProvider::class,
-		Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class // rap2hpoutre/laravel-log-viewer
+
+		/**
+		 * Installed packages.  Some are automatically discovered and the commented
+		 * out provider is only a reference point for what has already been installed
+		 */
+		// Barryvdh\Debugbar\ServiceProvider::class, // barryvdh/laravel-debugbar
+		// Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class // rap2hpoutre/laravel-log-viewer
 	])->toArray(),
 
 	/*

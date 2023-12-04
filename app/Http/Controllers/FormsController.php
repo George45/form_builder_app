@@ -8,22 +8,24 @@ use App\Repositories\FormRepository;
 use App\Exceptions\FormDeleteFailed;
 use App\Exceptions\FormStoreFailed;
 use App\Exceptions\FormUpdateFailed;
+use App\Validation\FormValidator;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Log;
-use Validator;
 
 class FormsController
 {
 	public FieldRepository $field;
 	public FormRepository $form;
 	public FieldTypeRepository $types;
+	public FormValidator $validator;
 
 	public function __construct()
 	{
 		$this->field = new FieldRepository();
 		$this->form = new FormRepository();
 		$this->types = new FieldTypeRepository();
+		$this->validator = new FormValidator();
 	}
 
 	/**
@@ -47,21 +49,14 @@ class FormsController
 	/**
 	 * Create a new form
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\Request $request
 	 * 
 	 * @throws FormStoreFailed
 	 */
 	public function store(Request $request)
 	{
 		$data = $request->only(['name', 'description']);
-		$validator = Validator::make($data, [
-			'description' => 'max:1000',
-			'name' => 'max:255|required'
-		], [
-			'description.max' => trans('forms.validation.max', ['field' => 'Description', 'max' => '255']),
-			'name.max' => trans('forms.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('forms.validation.required', ['field' => 'Name'])
-		]);
+		$validator = $this->validator->validateFormData($data);
 
 		if($validator->fails()) {
 			return back()
@@ -99,14 +94,9 @@ class FormsController
 	 * 
 	 * @param int $id The ID of the form to view
 	 */
-	public function show(Request $request, $id)
+	public function show($id)
 	{
-		$validator = Validator::make($request->route()->parameters(), [
-            'form' => 'integer|required',
-        ], [
-			'form.integer' => trans('forms.validation.form_invalid'),
-			'form.required' => trans('forms.validation.form_missing'),
-		]);
+		$validator = $this->validator->validateFormId($id);
 
 		if($validator->fails()) {
 			return redirect()
@@ -141,16 +131,12 @@ class FormsController
 	/**
 	 * Return the view for editing a form
 	 * 
+	 * @param \Illuminate\Http\Request $request
 	 * @param int $id The ID of the form to edit
 	 */
-	public function edit(Request $request, $id)
+	public function edit($id)
 	{
-		$validator = Validator::make($request->route()->parameters(), [
-            'form' => 'integer|required',
-        ], [
-			'form.integer' => trans('forms.validation.form_invalid'),
-			'form.required' => trans('forms.validation.form_missing'),
-		]);
+		$validator = $this->validator->validateFormId($id);
 
 		if($validator->fails()) {
 			return redirect()
@@ -186,19 +172,14 @@ class FormsController
 	/**
 	 * Update a form
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\Request $request
 	 * @param int $id The ID of the form to update
 	 * 
 	 * @throws FormUpdateFailed
 	 */
 	public function update(Request $request, $id)
 	{
-		$validator = Validator::make($request->route()->parameters(), [
-            'form' => 'integer|required',
-        ], [
-			'form.integer' => trans('forms.validation.form_invalid'),
-			'form.required' => trans('forms.validation.form_missing'),
-		]);
+		$validator = $this->validator->validateFormId($id);
 
 		if($validator->fails()) {
 			return redirect()
@@ -213,14 +194,7 @@ class FormsController
 		}
 
 		$data = $request->only(['name', 'description']);
-		$validator = Validator::make($data, [
-			'description' => 'max:1000',
-			'name' => 'max:255|required'
-		], [
-			'description.max' => trans('forms.validation.max', ['field' => 'Description', 'max' => '1000']),
-			'name.max' => trans('forms.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('forms.validation.required', ['field' => 'Name'])
-		]);
+		$validator = $this->validator->validateFormData($data);
 
 		if($validator->fails()) {
 			return redirect()
@@ -263,19 +237,14 @@ class FormsController
 	/**
 	 * Delete a form
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\Request $request
 	 * @param int $id The ID of the form to delete
 	 * 
 	 * @throws FormDeleteFailed
 	 */
-	public function destroy(Request $request, $id)
+	public function destroy($id)
 	{
-		$validator = Validator::make($request->route()->parameters(), [
-            'form' => 'integer|required',
-        ], [
-			'form.integer' => trans('forms.validation.form_invalid'),
-			'form.required' => trans('forms.validation.form_missing'),
-		]);
+		$validator = $this->validator->validateFormId($id);
 
 		if($validator->fails()) {
 			return redirect()

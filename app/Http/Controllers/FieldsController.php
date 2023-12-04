@@ -6,24 +6,26 @@ use App\Exceptions\FieldDeleteFailed;
 use App\Exceptions\FieldStoreFailed;
 use App\Exceptions\FieldUpdateFailed;
 use App\Repositories\FieldRepository;
+use App\Validation\FieldValidator;
+use App\Validation\FormValidator;
 use Illuminate\Http\Request;
 use Log;
-use Validator;
 
 class FieldsController
 {
 	public FieldRepository $field;
+	public FieldValidator $validator;
 
 	public function __construct()
 	{
 		$this->field = new FieldRepository();
+		$this->validator = new FieldValidator();
 	}
 
 	/**
 	 * Create a new field
 	 * 
-	 * @param Illuminate\Http\Request $request
-	 * 
+	 * @param \Illuminate\Http\Request $request
 	 * 
 	 * @throws FieldStoreFailed
 	 */
@@ -37,23 +39,7 @@ class FieldsController
 			'name'
 		]);
 		$data['required'] = $request->boolean('required');
-		$validator = Validator::make($data, [
-			'config' => 'string',
-			'description' => 'max:500',
-			'field_type' => 'required',
-			'form_id' => 'integer|required',
-			'name' => 'max:255|required',
-			'required' => 'boolean',
-		], [
-			'config.string' => trans('fields.validation.form_invalid'),
-			'description.max' => trans('fields.validation.max', ['field' => 'Description', 'max' => '500']),
-			'field_type.required' => trans('fields.validation.required'),
-			'form_id.integer' => trans('fields.validation.form_invalid'),
-			'form_id.required' => trans('fields.validation.form_missing'),
-			'name.max' => trans('fields.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('fields.validation.required', ['field' => 'Name']),
-			'required.boolean' => trans('fields.validation.form_invalid')
-		]);
+		$validator = $this->validator->validateFieldData($data, true);
 
 		if($validator->fails()) {
 			return back()
@@ -103,58 +89,37 @@ class FieldsController
 	/**
 	 * Update multiple fields
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\Request $request
 	 * 
 	 * @throws FieldUpdateFailed
 	 */
 	public function update(Request $request)
 	{
 		$formId = $request->get('form_id', '');
-		$validator = Validator::make(['form' => $formId], [
-			'form' =>  'integer|required'
-        ], [
-			'form.integer' => trans('fields.validation.form_invalid'),
-			'form.required' => trans('fields.validation.form_missing')
-		]);
+		$formValidator = new FormValidator();
+		$formValidator = $formValidator->validateFormId($formId);
 
-		if($validator->fails()) {
+		if($formValidator->fails()) {
 			return redirect()
-				->action([$this::class, 'edit'], ['form' => $formId])
+				->action([FormsController::class, 'edit'], ['form' => $formId])
 				->with([
-					'errors' => $validator->errors()->all()
+					'errors' => $formValidator->errors()->all()
 				])
 				->withInput($request->only(['field']));
 		}
 
 		$data = $request->only(['field']);
 		foreach($data['field'] as $key => $value) {
+			$data['field'][$key]['id'] = $key;
 			$data['field'][$key]['required'] = array_key_exists('required', $data['field'][$key]);
 		}
 
-		$rules = [
-			'config' => 'string',
-			'description' => 'max:500',
-			'field_type' => 'required',
-			'id' => 'integer|required',
-			'name' => 'max:255|required',
-			'required' => 'boolean'
-		];
-		$messages = [
-			'config.string' => trans('fields.validation.field_invalid'),
-			'description.max' => trans('fields.validation.max', ['field' => 'Description', 'max' => '500']),
-			'field_type.required' => trans('fields.validation.required'),
-			'id.integer' => trans('fields.validation.field_invalid'),
-			'id.required' => trans('fields.validation.field_missing'),
-			'name.max' => trans('fields.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('fields.validation.required', ['field' => 'Name']),
-			'required.boolean' => trans('fields.validation.field_invalid')
-		];
-
 		foreach($data['field'] as $key => $value) {
-			$validator = Validator::make([
+			$validator = $this->validator->validateFieldData([
 				...$value,
+				'form_id' => $formId,
 				'id' => $key
-			], $rules, $messages);
+			]);
 
 			if($validator->fails()) {
 				return redirect()
@@ -190,7 +155,7 @@ class FieldsController
 	/**
 	 * Delete a field
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\Request $request
 	 * @param int $id The ID of the field to delete
 	 * 
 	 * @throws FieldDeleteFailed
@@ -198,18 +163,7 @@ class FieldsController
 	public function destroy(Request $request, int $id)
 	{
 		$formId = $request->get('form_id', '');
-		$validator = Validator::make([
-			...$request->route()->parameters(),
-			'form' => $formId
-		], [
-            'field' => 'integer|required',
-			'form' =>  'integer|required'
-        ], [
-			'field.integer' => trans('fields.validation.field_invalid'),
-			'field.required' => trans('fields.validation.field_missing'),
-			'form.integer' => trans('fields.validation.form_invalid'),
-			'form.required' => trans('fields.validation.form_missing')
-		]);
+		$validator = $this->validator->validateFieldId($id);
 
 		if($validator->fails()) {
 			return redirect()

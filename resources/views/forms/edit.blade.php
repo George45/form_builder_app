@@ -72,7 +72,7 @@
 		<input type="checkbox"
 			name="required"
 			id="required"
-			@if(old('required', 0) === 1) checked="checked" @endif>
+			@if(old('required', 'off') === 'on') checked="checked" @endif>
 
 		<button type="submit">Submit</button>
 	</form>

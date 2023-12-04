@@ -45,12 +45,11 @@ class RouteServiceProvider extends ServiceProvider
 				->resource('field', FieldsController::class)
 				->only([
 					'store',
-					// 'update', // todo: currently unused, consider removing
 					'destroy'
 				]);
 
 			Route::middleware('web')
-				->patch('/fields/update', [FieldsController::class, 'updateMultiple']);
+				->patch('/fields/update', [FieldsController::class, 'update']);
 		});
 	}
 }

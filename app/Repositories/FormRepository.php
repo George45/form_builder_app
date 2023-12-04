@@ -32,7 +32,7 @@ class FormRepository
 			'id',
 			'name',
 			'description'
-		])->where('id', $id)->get()->toArray();
+		])->where('id', $id)->firstOrFail()->toArray();
 	}
 
 	/**

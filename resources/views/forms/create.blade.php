@@ -5,10 +5,10 @@
 	<form action="/forms" method="POST">
 		@csrf
 		<label for="name">Name</label>
-		<input type="text" name="name" id="name">
+		<input type="text" name="name" id="name" value="{{ old('name') }}" required>
 
 		<label for="name">Description</label>
-		<input type="text" name="description" id="description">
+		<input type="text" name="description" id="description" value="{{ old('description') }}">
 
 		<button type="submit">Submit</button>
 	</form>

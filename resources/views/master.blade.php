@@ -8,6 +8,7 @@
 		@vite(['resources/css/app.css'])
 	</head>
 	<body>
+		@include('shared.partials.notifications')
 		@yield('body')
 	</body>
 	@vite(['resources/js/app.js'])

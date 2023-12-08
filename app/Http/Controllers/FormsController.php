@@ -54,7 +54,7 @@ class FormsController
 	 */
 	public function store(FormStoreRequest $request)
 	{
-		$data = $request->only(['name', 'description']);
+		$data = $request->safe(['name', 'description']);
 
 		try {
 			$form = $this->form->createForm($data);
@@ -83,12 +83,13 @@ class FormsController
 	 * Return the view for displaying info about a form
 	 * 
 	 * @param \App\Http\Requests\FormGetRequest $request
-	 * @param int $id The ID of the form to view
 	 */
-	public function show(FormGetRequest $request, $id)
+	public function show(FormGetRequest $request)
 	{
+		$formId = $request->safe(['form'])['form'];
+
 		try {
-			$form = $this->form->getById($id);
+			$form = $this->form->getById($formId);
 		} catch (ModelNotFoundException $e) {
 			return redirect()
 				->action([$this::class, 'index'])
@@ -105,7 +106,7 @@ class FormsController
 
 		return view('forms.show', [
 			'form' => $form,
-			'fields' => $this->field->getById($id)
+			'fields' => $this->field->getById($formId)
 		]);
 	}
 
@@ -113,12 +114,13 @@ class FormsController
 	 * Return the view for editing a form
 	 * 
 	 * @param \App\Http\Requests\FormGetRequest $request
-	 * @param int $id The ID of the form to edit
 	 */
-	public function edit(FormGetRequest $request, $id)
+	public function edit(FormGetRequest $request)
 	{
+		$formId = $request->safe(['form'])['form'];
+
 		try {
-			$form = $this->form->getById($id);
+			$form = $this->form->getById($formId);
 		} catch (ModelNotFoundException $e) {
 			return redirect()
 				->action([$this::class, 'index'])
@@ -135,7 +137,7 @@ class FormsController
 
 		return view('forms.edit', [
 			'form' => $form,
-			'fields' => $this->field->getById($id),
+			'fields' => $this->field->getById($formId),
 			'types' => $this->types->getAll()
 		]);
 	}
@@ -144,16 +146,16 @@ class FormsController
 	 * Update a form
 	 * 
 	 * @param \App\Http\Requests\FormUpdateRequest $request
-	 * @param int $id The ID of the form to update
 	 * 
 	 * @throws FormUpdateFailed
 	 */
-	public function update(FormUpdateRequest $request, $id)
+	public function update(FormUpdateRequest $request)
 	{
-		$data = $request->only(['name', 'description']);
+		$formId = $request->safe(['form'])['form'];
+		$data = $request->safe(['name', 'description']);
 
 		try {
-			$success = $this->form->updateForm($id, $data);
+			$success = $this->form->updateForm($formId, $data);
 			if (!$success) {
 				throw new FormUpdateFailed(trans('forms.update.error'));
 			}
@@ -161,7 +163,7 @@ class FormsController
 			Log::error('Failed to update form: ' . $e->getMessage());
 
 			return redirect()
-				->action([$this::class, 'edit'], ['form' => $id])
+				->action([$this::class, 'edit'], ['form' => $formId])
 				->with([
 					'errors' => [trans('forms.update.fail')]
 				])
@@ -172,7 +174,7 @@ class FormsController
 		}
 
 		return redirect()
-			->action([$this::class, 'edit'], ['form' => $id])
+			->action([$this::class, 'edit'], ['form' => $formId])
 			->with([
 				'success' => [trans('forms.update.success', ['name' => $data['name']])]
 			]);
@@ -182,14 +184,15 @@ class FormsController
 	 * Delete a form
 	 * 
 	 * @param \App\Http\Requests\FormGetRequest $request
-	 * @param int $id The ID of the form to delete
 	 * 
 	 * @throws FormDeleteFailed
 	 */
-	public function destroy(FormGetRequest $request, $id)
+	public function destroy(FormGetRequest $request)
 	{
+		$formId = $request->safe(['form'])['form'];
+
 		try {
-			$success = $this->form->deleteForm($id);
+			$success = $this->form->deleteForm($formId);
 			if (!$success) {
 				throw new FormDeleteFailed(trans('forms.delete.error'));
 			}
@@ -197,7 +200,7 @@ class FormsController
 			Log::error('Failed to delete form: ' . $e->getMessage());
 
 			return redirect()
-				->action([$this::class, 'edit'], ['form' => $id])
+				->action([$this::class, 'edit'], ['form' => $formId])
 				->with([
 					'errors' => [trans('forms.delete.fail')]
 				]);

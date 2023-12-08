@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class FormGetRequest extends FormRequest
 {
 	/**
-     * Retrives the form request paremeter for validation
+     * Retrives the form request parameter for validation
      *
      * @return void
      */

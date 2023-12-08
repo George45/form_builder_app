@@ -72,7 +72,7 @@
 		<input type="checkbox"
 			name="required"
 			id="required"
-			@if(old('required', 'off') === 'on') checked="checked" @endif>
+			@if(old('required', false)) checked="checked" @endif>
 
 		<button type="submit">Submit</button>
 	</form>
@@ -85,45 +85,45 @@
 		@csrf
 		@method('PATCH')
 		<input type="hidden"
-			name="form_id"
-			id="field_form_id"
+			name="form"
+			id="field_form"
 			value="{{ $form['id'] }}">
 
 		<br/>
 
 		@foreach($fields as $field)
 			<label for="field_{{ $field['id'] }}_type">Field Type</label>
-			<select name="field[{{ $field['id'] }}][field_type]" id="field_{{ $field['id'] }}_type">
+			<select name="fields[{{ $field['id'] }}][field_type]" id="field_{{ $field['id'] }}_type">
 				@foreach($types as $type)
 					<option value="{{ $type['type'] }}"
-						@if($type['type'] == old('field.' . $field['id'] . '.field_type', $field['field_type'])) selected="selected" @endif
+						@if($type['type'] == old('fields.' . $field['id'] . '.field_type', $field['field_type'])) selected="selected" @endif
 					>{{ $type['name'] }}</option>
 				@endforeach
 			</select>
 
 			<label for="field_{{ $field['id'] }}_name">Name</label>
 			<input type="text"
-				name="field[{{ $field['id'] }}][name]"
+				name="fields[{{ $field['id'] }}][name]"
 				id="field_{{ $field['id'] }}_name"
-				value="{{ old('field.' . $field['id'] . '.name', $field['name']) }}">
+				value="{{ old('fields.' . $field['id'] . '.name', $field['name']) }}">
 
 			<label for="field_{{ $field['id'] }}_description">Description</label>
 			<input type="text"
-				name="field[{{ $field['id'] }}][description]"
+				name="fields[{{ $field['id'] }}][description]"
 				id="field_{{ $field['id'] }}_description"
-				value="{{ old('field.' . $field['id'] . '.description', $field['description']) }}">
+				value="{{ old('fields.' . $field['id'] . '.description', $field['description']) }}">
 
 			<label for="field_{{ $field['id'] }}_config">Config</label>
 			<input type="text"
-				name="field[{{ $field['id'] }}][config]"
+				name="fields[{{ $field['id'] }}][config]"
 				id="field_{{ $field['id'] }}_config"
-				value="{{ old('field.' . $field['id'] . '.config', $field['config']) }}">
+				value="{{ old('fields.' . $field['id'] . '.config', $field['config']) }}">
 
 			<label for="field_{{ $field['id'] }}_required">Required</label>
 			<input type="checkbox"
-				name="field[{{ $field['id'] }}][required]"
+				name="fields[{{ $field['id'] }}][required]"
 				id="field_{{ $field['id'] }}_required"
-				@if(old('field.' . $field['id'] . '.required', $field['required']) === 1) checked="checked" @endif>
+				@if(old('fields.' . $field['id'] . '.required', $field['required']) === 1) checked="checked" @endif>
 
 			<button type="submit" form="fieldDelete{{ $field['id'] }}">Delete</button>
 
@@ -137,7 +137,7 @@
 		<form action="/field/{{ $field['id'] }}" method="POST" id="fieldDelete{{ $field['id'] }}">
 			@csrf
 			@method('DELETE')
-			<input type="hidden" name="form_id" id="form_id" value="{{ $form['id'] }}">
+			<input type="hidden" name="form" id="del_form_id" value="{{ $form['id'] }}">
 		</form>
 	@endforeach
 

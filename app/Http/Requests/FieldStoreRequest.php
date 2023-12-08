@@ -2,19 +2,19 @@
 
 namespace App\Http\Requests;
 
-use App\Validation\Schema\FormSchema;
+use App\Validation\Schema\FieldSchema;
 use Illuminate\Foundation\Http\FormRequest;
 
-class FormUpdateRequest extends FormRequest
+class FieldStoreRequest extends FormRequest
 {
 	/**
-     * Retrives the form request parameter for validation
+     * Retrives the field request parameter for validation
      *
      * @return void
      */
     protected function prepareForValidation() {
-        $this->merge([
-            'form' => $this->route('form'),
+		$this->merge([
+            'required' => $this->request->get('required', 'off') === 'on',
         ]);
     }
 
@@ -33,10 +33,7 @@ class FormUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-			...FormSchema::idRules(),
-			...FormSchema::fieldRules()
-		];
+		return FieldSchema::fieldRules();
     }
 
 	/**
@@ -46,9 +43,6 @@ class FormUpdateRequest extends FormRequest
      */
     public function messages()
     {
-		return [
-			...FormSchema::idMessages(),
-			...FormSchema::fieldMessages()
-		];
+        return FieldSchema::fieldMessages();
     }
 }

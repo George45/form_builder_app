@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\FieldRepository;
-use App\Repositories\FieldTypeRepository;
-use App\Repositories\FormRepository;
 use App\Exceptions\FormDeleteFailed;
 use App\Exceptions\FormStoreFailed;
 use App\Exceptions\FormUpdateFailed;
-use App\Validation\FormValidator;
-use Illuminate\Http\Request;
+use App\Http\Requests\FormStoreRequest;
+use App\Http\Requests\FormGetRequest;
+use App\Http\Requests\FormUpdateRequest;
+use App\Repositories\FieldRepository;
+use App\Repositories\FieldTypeRepository;
+use App\Repositories\FormRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Log;
 
@@ -18,14 +19,12 @@ class FormsController
 	public FieldRepository $field;
 	public FormRepository $form;
 	public FieldTypeRepository $types;
-	public FormValidator $validator;
 
 	public function __construct()
 	{
 		$this->field = new FieldRepository();
 		$this->form = new FormRepository();
 		$this->types = new FieldTypeRepository();
-		$this->validator = new FormValidator();
 	}
 
 	/**
@@ -49,22 +48,13 @@ class FormsController
 	/**
 	 * Create a new form
 	 * 
-	 * @param \Illuminate\Http\Request $request
+	 * @param \App\Http\Requests\FormStoreRequest $request
 	 * 
 	 * @throws FormStoreFailed
 	 */
-	public function store(Request $request)
+	public function store(FormStoreRequest $request)
 	{
 		$data = $request->only(['name', 'description']);
-		$validator = $this->validator->validateFormData($data);
-
-		if($validator->fails()) {
-			return back()
-				->with([
-					'errors' => $validator->errors()->all()
-				])
-				->withInput($data);
-		}
 
 		try {
 			$form = $this->form->createForm($data);
@@ -92,20 +82,11 @@ class FormsController
 	/**
 	 * Return the view for displaying info about a form
 	 * 
+	 * @param \App\Http\Requests\FormGetRequest $request
 	 * @param int $id The ID of the form to view
 	 */
-	public function show($id)
+	public function show(FormGetRequest $request, $id)
 	{
-		$validator = $this->validator->validateFormId($id);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'index'])
-				->with([
-					'errors' => $validator->errors()->all()
-				]);
-		}
-
 		try {
 			$form = $this->form->getById($id);
 		} catch (ModelNotFoundException $e) {
@@ -131,21 +112,11 @@ class FormsController
 	/**
 	 * Return the view for editing a form
 	 * 
-	 * @param \Illuminate\Http\Request $request
+	 * @param \App\Http\Requests\FormGetRequest $request
 	 * @param int $id The ID of the form to edit
 	 */
-	public function edit($id)
+	public function edit(FormGetRequest $request, $id)
 	{
-		$validator = $this->validator->validateFormId($id);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'index'])
-				->with([
-					'errors' => $validator->errors()->all()
-				]);
-		}
-
 		try {
 			$form = $this->form->getById($id);
 		} catch (ModelNotFoundException $e) {
@@ -172,41 +143,14 @@ class FormsController
 	/**
 	 * Update a form
 	 * 
-	 * @param \Illuminate\Http\Request $request
+	 * @param \App\Http\Requests\FormUpdateRequest $request
 	 * @param int $id The ID of the form to update
 	 * 
 	 * @throws FormUpdateFailed
 	 */
-	public function update(Request $request, $id)
+	public function update(FormUpdateRequest $request, $id)
 	{
-		$validator = $this->validator->validateFormId($id);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'edit'], ['form' => $id])
-				->with([
-					'errors' => $validator->errors()->all()
-				])
-				->withInput([
-					'form_name' => $request->get('name'),
-					'form_description' => $request->get('description', '')
-				]);
-		}
-
 		$data = $request->only(['name', 'description']);
-		$validator = $this->validator->validateFormData($data);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'edit'], ['form' => $id])
-				->with([
-					'errors' => $validator->errors()->all()
-				])
-				->withInput([
-					'form_name' => $data['name'],
-					'form_description' => $request->get('description', '')
-				]);
-		}
 
 		try {
 			$success = $this->form->updateForm($id, $data);
@@ -237,23 +181,13 @@ class FormsController
 	/**
 	 * Delete a form
 	 * 
-	 * @param \Illuminate\Http\Request $request
+	 * @param \App\Http\Requests\FormGetRequest $request
 	 * @param int $id The ID of the form to delete
 	 * 
 	 * @throws FormDeleteFailed
 	 */
-	public function destroy($id)
+	public function destroy(FormGetRequest $request, $id)
 	{
-		$validator = $this->validator->validateFormId($id);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'edit'], ['form' => $id])
-				->with([
-					'errors' => $validator->errors()->all()
-				]);
-		}
-
 		try {
 			$success = $this->form->deleteForm($id);
 			if (!$success) {

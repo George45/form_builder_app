@@ -13,3 +13,11 @@
 		@endforeach
 	</ul>
 @endif
+
+@if($errors->any())
+	<ul>
+		@foreach ($errors->all() as $error)
+			<li style="color: red; font-weight: bold;">{{ $error }}</li>
+		@endforeach
+	</ul>
+@endif

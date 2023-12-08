@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Exceptions\FieldDeleteFailed;
 use App\Exceptions\FieldStoreFailed;
 use App\Exceptions\FieldUpdateFailed;
+use App\Http\Requests\FieldDeleteRequest;
+use App\Http\Requests\FieldStoreRequest;
+use App\Http\Requests\FieldUpdateRequest;
 use App\Repositories\FieldRepository;
-use Illuminate\Http\Request;
 use Log;
-use Validator;
 
 class FieldsController
 {
@@ -22,53 +23,20 @@ class FieldsController
 	/**
 	 * Create a new field
 	 * 
-	 * @param Illuminate\Http\Request $request
-	 * 
+	 * @param \Illuminate\Http\FieldStoreRequest $request
 	 * 
 	 * @throws FieldStoreFailed
 	 */
-	public function store(Request $request)
+	public function store(FieldStoreRequest $request)
 	{
-		$data = $request->only([
+		$data = $request->safe([
 			'config',
 			'description',
 			'field_type',
 			'form_id',
-			'name'
+			'name',
+			'required'
 		]);
-		$data['required'] = $request->boolean('required');
-		$validator = Validator::make($data, [
-			'config' => 'string',
-			'description' => 'max:500',
-			'field_type' => 'required',
-			'form_id' => 'integer|required',
-			'name' => 'max:255|required',
-			'required' => 'boolean',
-		], [
-			'config.string' => trans('fields.validation.form_invalid'),
-			'description.max' => trans('fields.validation.max', ['field' => 'Description', 'max' => '500']),
-			'field_type.required' => trans('fields.validation.required'),
-			'form_id.integer' => trans('fields.validation.form_invalid'),
-			'form_id.required' => trans('fields.validation.form_missing'),
-			'name.max' => trans('fields.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('fields.validation.required', ['field' => 'Name']),
-			'required.boolean' => trans('fields.validation.form_invalid')
-		]);
-
-		if($validator->fails()) {
-			return back()
-				->with([
-					'errors' => $validator->errors()->all()
-				])
-				->withInput($request->only([
-					'config',
-					'description',
-					'field_type',
-					'form_id',
-					'name',
-					'required'
-				]));
-		}
 
 		try {
 			$field = $this->field->createField($data);
@@ -103,70 +71,17 @@ class FieldsController
 	/**
 	 * Update multiple fields
 	 * 
-	 * @param Illuminate\Http\Request $request
+	 * @param \Illuminate\Http\FieldUpdateRequest $request
 	 * 
 	 * @throws FieldUpdateFailed
 	 */
-	public function update(Request $request)
+	public function update(FieldUpdateRequest $request)
 	{
-		$formId = $request->get('form_id', '');
-		$validator = Validator::make(['form' => $formId], [
-			'form' =>  'integer|required'
-        ], [
-			'form.integer' => trans('fields.validation.form_invalid'),
-			'form.required' => trans('fields.validation.form_missing')
-		]);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([$this::class, 'edit'], ['form' => $formId])
-				->with([
-					'errors' => $validator->errors()->all()
-				])
-				->withInput($request->only(['field']));
-		}
-
-		$data = $request->only(['field']);
-		foreach($data['field'] as $key => $value) {
-			$data['field'][$key]['required'] = array_key_exists('required', $data['field'][$key]);
-		}
-
-		$rules = [
-			'config' => 'string',
-			'description' => 'max:500',
-			'field_type' => 'required',
-			'id' => 'integer|required',
-			'name' => 'max:255|required',
-			'required' => 'boolean'
-		];
-		$messages = [
-			'config.string' => trans('fields.validation.field_invalid'),
-			'description.max' => trans('fields.validation.max', ['field' => 'Description', 'max' => '500']),
-			'field_type.required' => trans('fields.validation.required'),
-			'id.integer' => trans('fields.validation.field_invalid'),
-			'id.required' => trans('fields.validation.field_missing'),
-			'name.max' => trans('fields.validation.max', ['field' => 'Name', 'max' => '255']),
-			'name.required' => trans('fields.validation.required', ['field' => 'Name']),
-			'required.boolean' => trans('fields.validation.field_invalid')
-		];
-
-		foreach($data['field'] as $key => $value) {
-			$validator = Validator::make([
-				...$value,
-				'id' => $key
-			], $rules, $messages);
-
-			if($validator->fails()) {
-				return redirect()
-					->action([FormsController::class, 'edit'], ['form' => $formId])
-					->with([
-						'errors' => $validator->errors()->all()
-					])->withInput($request->only(['field']));
-			}
-		}
+		$formId = $request->safe(['form'])['form'];
+		$data = $request->safe(['fields']);
 
 		try {
-			$success = $this->field->updateFields($data['field']);
+			$success = $this->field->updateFields($data['fields']);
 			if (!$success) {
 				throw new FieldUpdateFailed(trans('fields.update.error'));
 			}
@@ -177,7 +92,8 @@ class FieldsController
 				->action([FormsController::class, 'edit'], ['form' => $formId])
 				->with([
 					'errors' => [trans('fields.update.fail')]
-				]);
+				])
+				->withInput($request->only(['fields']));
 		}
 
 		return redirect()
@@ -190,37 +106,17 @@ class FieldsController
 	/**
 	 * Delete a field
 	 * 
-	 * @param Illuminate\Http\Request $request
-	 * @param int $id The ID of the field to delete
+	 * @param \App\Http\Requests\FieldDeleteRequest $request
 	 * 
 	 * @throws FieldDeleteFailed
 	 */
-	public function destroy(Request $request, int $id)
+	public function destroy(FieldDeleteRequest $request)
 	{
-		$formId = $request->get('form_id', '');
-		$validator = Validator::make([
-			...$request->route()->parameters(),
-			'form' => $formId
-		], [
-            'field' => 'integer|required',
-			'form' =>  'integer|required'
-        ], [
-			'field.integer' => trans('fields.validation.field_invalid'),
-			'field.required' => trans('fields.validation.field_missing'),
-			'form.integer' => trans('fields.validation.form_invalid'),
-			'form.required' => trans('fields.validation.form_missing')
-		]);
-
-		if($validator->fails()) {
-			return redirect()
-				->action([FormsController::class, 'edit'], ['form' => $formId])
-				->with([
-					'errors' => $validator->errors()->all()
-				]);
-		}
+		$fieldId = $request->safe(['field'])['field'];
+		$formId = $request->safe(['form'])['form'];
 
 		try {
-			$success = $this->field->deleteField($id);
+			$success = $this->field->deleteField($fieldId);
 			if (!$success) {
 				throw new FieldDeleteFailed(trans('fields.delete.error'));
 			}
